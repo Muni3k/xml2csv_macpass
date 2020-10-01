@@ -2,7 +2,7 @@
 
 ### USAGE ###
 # sh xml2csv.sh FILENAME [DELIMETER] [DELIMETER_SUGGEST]
-# Grand +x chmods if needed
+# Grant +x chmods if needed
 # FILENAME - required argument, name of the xml file, without extension, tested on xml files from OSX MacPass, output file will be named FILENAME.csv
 # DELIMETER - optional argument, forces script to use your own delimiter, see warning no 1 for details, enter just one ASCII char
 # DELIMETER_SUGGEST - optional argument, script will present suggested delimiters based on output csv file, to enable enter 'suggest'
