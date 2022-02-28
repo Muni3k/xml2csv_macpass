@@ -75,17 +75,7 @@ else
     sed -i -e 's'$delimeter'</Value> </String> <String> <Key>Notes</Key>'$delimeter'</URL> <String> <Key>Notes</Key>'$delimeter'g' .xmltocsv.tmp
 
         # generate csv output file from temporary file
-    xml2csv --input ".xmltocsv.tmp" --output "$xmlFile.csv" --tag "Entry" --delimiter , --noheader --ignore Group Notes Name IsExpanded DefaultAutoTypeSequence EnableAutoType EnableSearching LastTopVisibleEntry UUID IconID ForegroundColor BackgroundColor OverrideURL Tags Times LastModificationTime CreationTime LastAccessTime ExpiryTime Expires UsageCount LocationChanged AutoType Enabled DataTransferObfuscation History String Key Value > /dev/null
-
-        # check how many not needed commas are in output data
-        # if any - there will be problem with quality of output file
-    commas=$(grep -o , $xmlFile.csv | wc -l)
-    lines=$(cat $xmlFile.csv | wc -l)
-    lines=$(($lines * 2)) #two commas per line because three columns with data
-    
-    if [ $commas -ne $lines ]; then
-        echo "Too many commas! Please check your XML data for commas and see warning no 2 in script. Quality of output CSV file can not be ensured."
-    fi
+    xml2csv --input ".xmltocsv.tmp" --output "$xmlFile.csv" --tag "Entry" --delimiter , --noheader --ignore Group Notes Name IsExpanded DefaultAutoTypeSequence EnableAutoType EnableSearching LastTopVisibleEntry PreviousParentGroup UUID IconID ForegroundColor BackgroundColor OverrideURL Tags Times LastModificationTime CreationTime LastAccessTime ExpiryTime Expires UsageCount LocationChanged AutoType Enabled DataTransferObfuscation History String Key Value > /dev/null
 
         # set proper column oder (url, username, password)
         # using 5x hash to be almost sure about unique string
@@ -112,11 +102,15 @@ else
     
         # check for http / https or ports
     if grep -q "http" $xmlFile.csv 2>/dev/null; then
-        echo "Remove 'http' and 'https' prefixes from URLS!"
+        echo "Remove 'http' and 'https' prefixes from URLs!"
     fi
     
             # remove 4-digit ports in final csv file
     sed -i -e 's'$delimeter':....\,'$delimeter'\,'$delimeter'g' $xmlFile.csv
+            # remove 3-digit ports in final csv file
+    sed -i -e 's'$delimeter':...\,'$delimeter'\,'$delimeter'g' $xmlFile.csv
+            # remove 2-digit ports in final csv file
+    sed -i -e 's'$delimeter':..\,'$delimeter'\,'$delimeter'g' $xmlFile.csv
     
         # suggest some delimeters from ready csv file for the next time
     if [ "$3" = "suggest" ]; then
@@ -126,6 +120,17 @@ else
             echo "Next time you can probably use $i as delimeter!"
            fi
         done
+    fi
+
+        # check how many not needed commas are in output data
+        # if any - there will be problem with quality of output file
+    commas=$(grep -o , $xmlFile.csv | wc -l)
+    lines=$(cat $xmlFile.csv | wc -l)
+    lines=$(($lines - 1)) #not taking into account header's line
+    lines=$(($lines * 2)) #two commas per line because three columns with data
+    
+    if [ $commas -ne $lines ]; then
+        echo "Too many commas! Please check your XML data for commas and see warning no 2 in script. Quality of output CSV file can not be ensured."
     fi
 
     echo "Finished! Plase see generated $xmlFile.csv file for results."
